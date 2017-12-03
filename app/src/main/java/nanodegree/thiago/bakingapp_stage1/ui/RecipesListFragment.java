@@ -4,6 +4,8 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nanodegree.thiago.bakingapp_stage1.R;
+import nanodegree.thiago.bakingapp_stage1.adapter.RecipeListAdapter;
 import nanodegree.thiago.bakingapp_stage1.data.RecipeJson;
 
 
@@ -34,7 +37,10 @@ public class RecipesListFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    private TextView helloTv;
+    private RecyclerView recipesListRecyclerView;
+    private LinearLayoutManager layoutManager;
+    private RecipeListAdapter recipeListAdapter;
+
 
     public RecipesListFragment() {
         // Required empty public constructor
@@ -52,7 +58,15 @@ public class RecipesListFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_recipes_list, container, false);
-        helloTv = (TextView)view.findViewById(R.id.hello_textview);
+        recipesListRecyclerView = (RecyclerView)view.findViewById(R.id.recipe_list_recyclerview);
+
+        layoutManager = new LinearLayoutManager(getActivity(),
+                LinearLayoutManager.VERTICAL,
+                false);
+        recipesListRecyclerView.setLayoutManager(layoutManager);
+
+        recipeListAdapter = new RecipeListAdapter(getContext());
+        recipesListRecyclerView.setAdapter(recipeListAdapter);
 
         return view;
     }
@@ -68,21 +82,22 @@ public class RecipesListFragment extends Fragment {
                     @Override
                     public void onResponse(String response) {
 
-                        if (null != helloTv) {
+                        if (null != recipeListAdapter) {
                             Gson gson = new Gson();
-                            RecipeJson[] recipeJson = gson.fromJson(response, RecipeJson[].class);
-
-                            for (RecipeJson recipe : recipeJson)
-                                helloTv.append(recipe.getName()+"\n");
+                            RecipeJson []recipes = gson.fromJson(response, RecipeJson[].class);
+                            ArrayList<RecipeJson> recipesList = new ArrayList();
+                            for (RecipeJson recipe : recipes) {
+                                recipesList.add(recipe);
+                            }
+                            recipeListAdapter.setRecipesList(recipesList);
                         }
+
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        if (null != helloTv) {
-                            helloTv.setText(error.getMessage());
-                        }
+
                     }
                 });
 

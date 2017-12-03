@@ -5,16 +5,11 @@
     android:layout_height="match_parent"
     tools:context="nanodegree.thiago.bakingapp_stage1.ui.RecipesListFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <ScrollView
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recipe_list_recyclerview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:padding="8dp"/>
 
-        <TextView
-            android:id="@+id/hello_textview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:text="@string/hello_blank_fragment" />
-    </ScrollView>
 
 </FrameLayout>
