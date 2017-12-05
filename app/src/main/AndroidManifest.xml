@@ -18,10 +18,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.RecipeStepsActivity"
-            android:label="@string/title_activity_recipe_steps"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
