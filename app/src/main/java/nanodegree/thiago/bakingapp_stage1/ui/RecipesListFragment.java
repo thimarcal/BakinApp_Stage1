@@ -6,8 +6,10 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewDebug;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -28,7 +30,10 @@ import nanodegree.thiago.bakingapp_stage1.adapter.RecipeListAdapter;
 import nanodegree.thiago.bakingapp_stage1.data.RecipeJson;
 
 
-public class RecipesListFragment extends Fragment {
+public class RecipesListFragment extends Fragment
+                                 implements RecipeListAdapter.RecipeOnClickListener {
+
+    private static final String TAG = RecipesListFragment.class.getSimpleName();
 
     private static final String RECIPES_URL =
                 "https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json";
@@ -65,7 +70,7 @@ public class RecipesListFragment extends Fragment {
                 false);
         recipesListRecyclerView.setLayoutManager(layoutManager);
 
-        recipeListAdapter = new RecipeListAdapter(getContext());
+        recipeListAdapter = new RecipeListAdapter(getContext(), this);
         recipesListRecyclerView.setAdapter(recipeListAdapter);
 
         return view;
@@ -121,6 +126,14 @@ public class RecipesListFragment extends Fragment {
         mListener = null;
     }
 
+    @Override
+    public void onRecipeClicked(View view) {
+        RecipeJson recipe = recipeListAdapter.getRecipeAt((Integer) view.getTag());
+
+        mListener.onFragmentInteraction(recipe);
+        Log.d(TAG, recipe.getName());
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -132,6 +145,6 @@ public class RecipesListFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);
+        void onFragmentInteraction(RecipeJson recipe);
     }
 }

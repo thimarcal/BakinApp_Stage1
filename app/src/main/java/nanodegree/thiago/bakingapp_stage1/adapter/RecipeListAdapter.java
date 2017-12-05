@@ -1,7 +1,9 @@
 package nanodegree.thiago.bakingapp_stage1.adapter;
 
 import android.content.Context;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,9 +25,11 @@ public class RecipeListAdapter extends
 
     private ArrayList<RecipeJson> mRecipesList = new ArrayList<>();
     private Context mContext;
+    private RecipeOnClickListener mListener;
 
-    public RecipeListAdapter(Context context) {
+    public RecipeListAdapter(Context context, RecipeOnClickListener listener) {
         mContext = context;
+        mListener = listener;
     }
 
     @Override
@@ -45,6 +49,7 @@ public class RecipeListAdapter extends
             // TODO: Use Picasso to load recipe Image
         }
 
+        holder.recipeCard.setTag(position);
         holder.recipeName.setText(recipe.getName());
         holder.recipeServings.setText(""+recipe.getServings());
     }
@@ -66,8 +71,21 @@ public class RecipeListAdapter extends
         return mRecipesList;
     }
 
-    class RecipeListItemViewHolder extends RecyclerView.ViewHolder {
+    public RecipeJson getRecipeAt(int position) {
+        if (null != mRecipesList) {
+            return mRecipesList.get(position);
+        }
+        return null;
+    }
 
+    public interface RecipeOnClickListener {
+        public void onRecipeClicked(View view);
+    }
+
+    class RecipeListItemViewHolder extends RecyclerView.ViewHolder
+                                    implements View.OnClickListener {
+
+        private CardView recipeCard;
         private ImageView recipeImage;
         private TextView recipeName;
         private TextView recipeServings;
@@ -75,9 +93,19 @@ public class RecipeListAdapter extends
         public RecipeListItemViewHolder(View itemView) {
             super(itemView);
 
+            recipeCard = (CardView)itemView.findViewById(R.id.recipe_card);
             recipeImage = (ImageView)itemView.findViewById(R.id.recipe_image);
             recipeName = (TextView)itemView.findViewById(R.id.recipe_name_textview);
             recipeServings = (TextView)itemView.findViewById(R.id.recipe_servings_textview);
+
+            recipeCard.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            if (null != mListener) {
+                mListener.onRecipeClicked(view);
+            }
         }
     }
 }

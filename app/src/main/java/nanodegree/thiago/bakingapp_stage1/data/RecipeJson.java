@@ -1,12 +1,16 @@
 package nanodegree.thiago.bakingapp_stage1.data;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by thiagom on 12/2/17.
  */
 
-public class RecipeJson {
+public class RecipeJson implements Parcelable {
 
     /**
      * id : 1
@@ -23,6 +27,17 @@ public class RecipeJson {
     private String image;
     private List<IngredientsBean> ingredients;
     private List<StepsBean> steps;
+
+    public RecipeJson(Parcel in) {
+        id = in.readInt();
+        name = in.readString();
+        servings = in.readInt();
+        image = in.readString();
+        ingredients = new ArrayList<>();
+        in.readList(ingredients, IngredientsBean.class.getClassLoader());
+        steps = new ArrayList<>();
+        in.readList(steps, StepsBean.class.getClassLoader());
+    }
 
     public int getId() {
         return id;
@@ -72,7 +87,34 @@ public class RecipeJson {
         this.steps = steps;
     }
 
-    public static class IngredientsBean {
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(id);
+        parcel.writeString(name);
+        parcel.writeInt(servings);
+        parcel.writeString(image);
+        parcel.writeArray(ingredients.toArray());
+        parcel.writeArray(steps.toArray());
+    }
+
+    public static final Parcelable.Creator<RecipeJson> CREATOR = new Creator<RecipeJson>() {
+        @Override
+        public RecipeJson createFromParcel(Parcel in) {
+            return new RecipeJson(in);
+        }
+
+        @Override
+        public RecipeJson[] newArray(int size) {
+            return new RecipeJson[size];
+        }
+    };
+
+    public static class IngredientsBean implements Parcelable {
         /**
          * quantity : 2
          * measure : CUP
@@ -82,6 +124,12 @@ public class RecipeJson {
         private float quantity;
         private String measure;
         private String ingredient;
+
+        public IngredientsBean (Parcel in) {
+            quantity = in.readFloat();
+            measure = in.readString();
+            ingredient = in.readString();
+        }
 
         public float getQuantity() {
             return quantity;
@@ -106,9 +154,33 @@ public class RecipeJson {
         public void setIngredient(String ingredient) {
             this.ingredient = ingredient;
         }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel parcel, int i) {
+            parcel.writeFloat(quantity);
+            parcel.writeString(measure);
+            parcel.writeString(ingredient);
+        }
+
+        public static final Parcelable.Creator<IngredientsBean> CREATOR = new Creator<IngredientsBean>() {
+            @Override
+            public IngredientsBean createFromParcel(Parcel in) {
+                return new IngredientsBean(in);
+            }
+
+            @Override
+            public IngredientsBean[] newArray(int size) {
+                return new IngredientsBean[size];
+            }
+        };
     }
 
-    public static class StepsBean {
+    public static class StepsBean implements Parcelable {
         /**
          * id : 0
          * shortDescription : Recipe Introduction
@@ -122,6 +194,14 @@ public class RecipeJson {
         private String description;
         private String videoURL;
         private String thumbnailURL;
+
+        public StepsBean(Parcel in) {
+            id = in.readInt();
+            shortDescription = in.readString();
+            description = in.readString();
+            videoURL = in.readString();
+            thumbnailURL = in.readString();
+        }
 
         public int getId() {
             return id;
@@ -162,5 +242,31 @@ public class RecipeJson {
         public void setThumbnailURL(String thumbnailURL) {
             this.thumbnailURL = thumbnailURL;
         }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel parcel, int i) {
+            parcel.writeInt(id);
+            parcel.writeString(shortDescription);
+            parcel.writeString(description);
+            parcel.writeString(videoURL);
+            parcel.writeString(thumbnailURL);
+        }
+
+        public static final Parcelable.Creator<StepsBean> CREATOR = new Creator<StepsBean>() {
+            @Override
+            public StepsBean createFromParcel(Parcel in) {
+                return new StepsBean(in);
+            }
+
+            @Override
+            public StepsBean[] newArray(int size) {
+                return new StepsBean[size];
+            }
+        };
     }
 }
