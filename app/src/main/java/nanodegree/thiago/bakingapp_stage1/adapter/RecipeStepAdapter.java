@@ -69,4 +69,8 @@ public class RecipeStepAdapter extends RecyclerView.Adapter<RecipeStepAdapter.Re
             stepShortDescription = (TextView)itemView.findViewById(R.id.step_short_description);
         }
     }
+
+    public interface OnStepClicked {
+        public void onItemClicked(int position);
+    }
 }

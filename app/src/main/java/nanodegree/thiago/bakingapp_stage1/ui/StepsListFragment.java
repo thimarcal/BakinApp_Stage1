@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -12,6 +13,7 @@ import android.view.ViewGroup;
 
 import java.util.List;
 
+import nanodegree.thiago.bakingapp_stage1.OnFragmentInteractionListener;
 import nanodegree.thiago.bakingapp_stage1.R;
 import nanodegree.thiago.bakingapp_stage1.adapter.RecipeStepAdapter;
 import nanodegree.thiago.bakingapp_stage1.data.RecipeJson;
@@ -19,12 +21,11 @@ import nanodegree.thiago.bakingapp_stage1.data.RecipeJson;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link StepsListFragment.OnFragmentInteractionListener} interface
+ * {@link OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link StepsListFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class StepsListFragment extends Fragment {
+  */
+public class StepsListFragment extends Fragment implements View.OnClickListener,
+                                                        RecipeStepAdapter.OnStepClicked {
 
     private OnFragmentInteractionListener mListener;
 
@@ -32,6 +33,7 @@ public class StepsListFragment extends Fragment {
     private RecipeStepAdapter mAdapter;
     private LinearLayoutManager layoutManager;
     private List<RecipeJson.StepsBean> mStepsList;
+    private CardView mIngredientsCard;
 
     public StepsListFragment() {
         // Required empty public constructor
@@ -57,6 +59,9 @@ public class StepsListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_steps_list, container, false);
         stepsRecyclerView = (RecyclerView) view.findViewById(R.id.steps_list_recyclerview);
 
+        mIngredientsCard = view.findViewById(R.id.ingredients_card);
+        mIngredientsCard.setOnClickListener(this);
+
         layoutManager = new LinearLayoutManager(getActivity(),
                 LinearLayoutManager.VERTICAL,
                 false);
@@ -69,13 +74,6 @@ public class StepsListFragment extends Fragment {
         stepsRecyclerView.setAdapter(mAdapter);
 
         return view;
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
     }
 
     @Override
@@ -95,17 +93,19 @@ public class StepsListFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
+    /*
+     * OnClick will handle clicks to the Ingredients Card
      */
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);
+    @Override
+    public void onClick(View view) {
+
+    }
+
+    /*
+     * onItemClick will handle clicks to the Steps
+     */
+    @Override
+    public void onItemClicked(int position) {
+
     }
 }

@@ -1,6 +1,7 @@
 package nanodegree.thiago.bakingapp_stage1.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -25,6 +26,7 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
 
+import nanodegree.thiago.bakingapp_stage1.OnFragmentInteractionListener;
 import nanodegree.thiago.bakingapp_stage1.R;
 import nanodegree.thiago.bakingapp_stage1.adapter.RecipeListAdapter;
 import nanodegree.thiago.bakingapp_stage1.data.RecipeJson;
@@ -34,11 +36,7 @@ public class RecipesListFragment extends Fragment
                                  implements RecipeListAdapter.RecipeOnClickListener {
 
     private static final String TAG = RecipesListFragment.class.getSimpleName();
-
-    private static final String RECIPES_URL =
-                "https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json";
-
-    private RequestQueue queue;
+    public static final String EXTRA_POSITION = "extra_position";
 
     private OnFragmentInteractionListener mListener;
 
@@ -54,8 +52,6 @@ public class RecipesListFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        queue = Volley.newRequestQueue(getContext());
     }
 
     @Override
@@ -76,43 +72,21 @@ public class RecipesListFragment extends Fragment
         return view;
     }
 
+    public void setRecipes(ArrayList<RecipeJson> recipes) {
+        if (null != recipeListAdapter) {
+            recipeListAdapter.setRecipesList(recipes);
+        }
+    }
+
     @Override
     public void onStart() {
         super.onStart();
-
-        StringRequest request = new StringRequest(
-                Request.Method.GET,
-                RECIPES_URL,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-
-                        if (null != recipeListAdapter) {
-                            Gson gson = new Gson();
-                            RecipeJson []recipes = gson.fromJson(response, RecipeJson[].class);
-                            ArrayList<RecipeJson> recipesList = new ArrayList();
-                            for (RecipeJson recipe : recipes) {
-                                recipesList.add(recipe);
-                            }
-                            recipeListAdapter.setRecipesList(recipesList);
-                        }
-
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-
-                    }
-                });
-
-        queue.add(request);
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
+        if (context instanceof nanodegree.thiago.bakingapp_stage1.OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
@@ -126,25 +100,16 @@ public class RecipesListFragment extends Fragment
         mListener = null;
     }
 
+    /*
+     * When a Recipe is clicked we inform its TAG (position in the adapter), so that it's possible
+     * to open its steps.
+     */
     @Override
     public void onRecipeClicked(View view) {
-        RecipeJson recipe = recipeListAdapter.getRecipeAt((Integer) view.getTag());
+        Bundle bundle = new Bundle();
+        bundle.putInt(EXTRA_POSITION, (Integer)view.getTag());
 
-        mListener.onFragmentInteraction(recipe);
-        Log.d(TAG, recipe.getName());
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(RecipeJson recipe);
+        mListener.onFragmentInteraction(OnFragmentInteractionListener.ACTION_RECIPE_SELECTED,
+                                        bundle);
     }
 }
