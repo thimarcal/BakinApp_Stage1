@@ -36,7 +36,6 @@ public class RecipesListFragment extends Fragment
                                  implements RecipeListAdapter.RecipeOnClickListener {
 
     private static final String TAG = RecipesListFragment.class.getSimpleName();
-    public static final String EXTRA_POSITION = "extra_position";
 
     private OnFragmentInteractionListener mListener;
 
@@ -107,7 +106,7 @@ public class RecipesListFragment extends Fragment
     @Override
     public void onRecipeClicked(View view) {
         Bundle bundle = new Bundle();
-        bundle.putInt(EXTRA_POSITION, (Integer)view.getTag());
+        bundle.putInt(getString(R.string.extra_position), (Integer)view.getTag());
 
         mListener.onFragmentInteraction(OnFragmentInteractionListener.ACTION_RECIPE_SELECTED,
                                         bundle);

@@ -38,14 +38,19 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        recipesListFragment = new RecipesListFragment();
         if (savedInstanceState == null) {
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            Log.d("MAIN", "" + transaction.isEmpty());
+            if (null != mRecipesList) {
+                recipesListFragment.setRecipes(mRecipesList);
+            }
 
-            recipesListFragment = new RecipesListFragment();
-            transaction.replace(R.id.fragments_container, recipesListFragment);
-            transaction.commit();
+        } else {
+
         }
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragments_container, recipesListFragment)
+                .commit();
 
         /**
          * Data is retrieved in MainActivity, that will handle Fragment changes
@@ -61,6 +66,7 @@ public class MainActivity extends AppCompatActivity
                         Gson gson = new Gson();
                         RecipeJson[] recipes = gson.fromJson(response, RecipeJson[].class);
                         mRecipesList = new ArrayList();
+                        Log.d("MAIN", "Loaded recipes");
                         for (RecipeJson recipe : recipes) {
                             mRecipesList.add(recipe);
                         }
@@ -73,11 +79,19 @@ public class MainActivity extends AppCompatActivity
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-
+                        Log.d("MAIN", "Failed to load: "+error.getMessage());
                     }
                 });
 
         queue.add(request);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt(getString(R.string.current_recipe_key), mCurrentRecipe);
+        outState.putInt(getString(R.string.current_step_key), mCurrentRecipeStep);
+        outState.putParcelableArrayList(getString(R.string.recipes_key), mRecipesList);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -99,15 +113,81 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onFragmentInteraction(int action, Bundle extras) {
-        if (OnFragmentInteractionListener.ACTION_RECIPE_SELECTED == action) {
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            StepsListFragment fragment = new StepsListFragment();
-            mCurrentRecipe = extras.getInt(RecipesListFragment.EXTRA_POSITION);
-            fragment.setStepsList(mRecipesList.get(mCurrentRecipe).getSteps());
+        switch (action) {
+            case OnFragmentInteractionListener.ACTION_RECIPE_SELECTED:
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                StepsListFragment fragment = new StepsListFragment();
+                mCurrentRecipe = extras.getInt(getString(R.string.extra_position));
+                fragment.setStepsList(mRecipesList.get(mCurrentRecipe).getSteps());
 
-            transaction.replace(R.id.fragments_container, fragment, "STEPS_FRAGMENT");
-            transaction.addToBackStack(null);
-            transaction.commit();
+                transaction.replace(R.id.fragments_container, fragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+                break;
+
+            case ACTION_STEP_SELECTED:
+                int stepIndex = extras.getInt(getString(R.string.extra_position));
+                StepDetailsFragment detailsFragment = new StepDetailsFragment();
+                RecipeJson.StepsBean step = mRecipesList.get(mCurrentRecipe).getSteps().get(stepIndex);
+                String videoUrl = step.getVideoURL();
+
+                detailsFragment.setStepData(this, videoUrl, step.getDescription(), stepIndex,
+                        mRecipesList.get(mCurrentRecipe).getSteps().size());
+
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragments_container, detailsFragment)
+                        .addToBackStack(null)
+                        .commit();
+                break;
+
+            case ACTION_INGREDIENTS_SELECTED:
+                IngredientsFragment ingredientsFragment = new IngredientsFragment();
+                ingredientsFragment.setIngredients(
+                        mRecipesList.get(mCurrentRecipe).getIngredients());
+
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragments_container, ingredientsFragment)
+                        .addToBackStack(null)
+                        .commit();
+                break;
+
+            case ACTION_NEXT_STEP:
+                mCurrentRecipeStep += 1;
+                RecipeJson.StepsBean nextStep = mRecipesList.get(mCurrentRecipe).getSteps().get(mCurrentRecipeStep);
+                StepDetailsFragment nextStepDetailsFragment = new StepDetailsFragment();
+
+                nextStepDetailsFragment.setStepData(this,
+                        nextStep.getVideoURL(),
+                        nextStep.getDescription(),
+                        mCurrentRecipeStep,
+                        mRecipesList.get(mCurrentRecipe).getSteps().size());
+
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragments_container, nextStepDetailsFragment)
+                        .addToBackStack(null)
+                        .commit();
+                break;
+
+            case ACTION_PREVIOUS_STEP:
+                mCurrentRecipeStep -= 1;
+                RecipeJson.StepsBean prevStep = mRecipesList.get(mCurrentRecipe).getSteps().get(mCurrentRecipeStep);
+                StepDetailsFragment prevStepDetailsFragment = new StepDetailsFragment();
+
+                prevStepDetailsFragment.setStepData(this,
+                        prevStep.getVideoURL(),
+                        prevStep.getDescription(),
+                        mCurrentRecipeStep,
+                        mRecipesList.get(mCurrentRecipe).getSteps().size());
+
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragments_container, prevStepDetailsFragment)
+                        .addToBackStack(null)
+                        .commit();
+                break;
+
+            default:
+                break;
         }
+
     }
 }

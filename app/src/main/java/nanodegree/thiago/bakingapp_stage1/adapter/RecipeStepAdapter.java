@@ -1,12 +1,16 @@
 package nanodegree.thiago.bakingapp_stage1.adapter;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
@@ -24,6 +28,13 @@ import nanodegree.thiago.bakingapp_stage1.data.RecipeJson;
 public class RecipeStepAdapter extends RecyclerView.Adapter<RecipeStepAdapter.RecipeStepViewHolder> {
 
     private ArrayList<RecipeJson.StepsBean> mSteps;
+    private Context mContext;
+    private OnStepClickListener mListener;
+
+    public RecipeStepAdapter (Context context, OnStepClickListener listener) {
+        mContext = context;
+        mListener = listener;
+    }
 
     @Override
     public RecipeStepViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -39,8 +50,15 @@ public class RecipeStepAdapter extends RecyclerView.Adapter<RecipeStepAdapter.Re
     public void onBindViewHolder(RecipeStepViewHolder holder, int position) {
         RecipeJson.StepsBean step = mSteps.get(position);
 
-        if (null != step.getThumbnailURL() && !step.getThumbnailURL().isEmpty()) {
-            //TODO: Implement Picasso to load the image
+        holder.itemView.setTag(position);
+        String url = step.getThumbnailURL();
+        if (null != url && !url.isEmpty()) {
+            Uri uri = Uri.parse(url);
+
+            Picasso.with(mContext)
+                    .load(uri)
+                    .placeholder(R.drawable.food)
+                    .into(holder.stepThumbnail);
         }
         holder.stepShortDescription.setText(step.getShortDescription());
     }
@@ -58,7 +76,7 @@ public class RecipeStepAdapter extends RecyclerView.Adapter<RecipeStepAdapter.Re
         notifyDataSetChanged();
     }
 
-    class RecipeStepViewHolder extends RecyclerView.ViewHolder {
+    class RecipeStepViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private ImageView stepThumbnail;
         private TextView stepShortDescription;
 
@@ -67,10 +85,19 @@ public class RecipeStepAdapter extends RecyclerView.Adapter<RecipeStepAdapter.Re
 
             stepThumbnail = (ImageView)itemView.findViewById(R.id.step_thumbnail);
             stepShortDescription = (TextView)itemView.findViewById(R.id.step_short_description);
+
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            if (null != mListener) {
+                mListener.onItemClicked((Integer)view.getTag());
+            }
         }
     }
 
-    public interface OnStepClicked {
+    public interface OnStepClickListener {
         public void onItemClicked(int position);
     }
 }

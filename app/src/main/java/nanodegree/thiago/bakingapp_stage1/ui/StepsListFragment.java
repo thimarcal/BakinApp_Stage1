@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +26,7 @@ import nanodegree.thiago.bakingapp_stage1.data.RecipeJson;
  * to handle interaction events.
   */
 public class StepsListFragment extends Fragment implements View.OnClickListener,
-                                                        RecipeStepAdapter.OnStepClicked {
+                                                        RecipeStepAdapter.OnStepClickListener {
 
     private OnFragmentInteractionListener mListener;
 
@@ -67,7 +68,7 @@ public class StepsListFragment extends Fragment implements View.OnClickListener,
                 false);
         stepsRecyclerView.setLayoutManager(layoutManager);
 
-        mAdapter = new RecipeStepAdapter();
+        mAdapter = new RecipeStepAdapter(getContext(), this);
         if (null != mStepsList) {
             mAdapter.setSteps(mStepsList);
         }
@@ -98,7 +99,7 @@ public class StepsListFragment extends Fragment implements View.OnClickListener,
      */
     @Override
     public void onClick(View view) {
-
+        mListener.onFragmentInteraction(OnFragmentInteractionListener.ACTION_INGREDIENTS_SELECTED, null);
     }
 
     /*
@@ -106,6 +107,9 @@ public class StepsListFragment extends Fragment implements View.OnClickListener,
      */
     @Override
     public void onItemClicked(int position) {
+        Bundle bundle = new Bundle();
+        bundle.putInt(getString(R.string.extra_position), position);
 
+        mListener.onFragmentInteraction(OnFragmentInteractionListener.ACTION_STEP_SELECTED, bundle);
     }
 }

@@ -1,6 +1,7 @@
 package nanodegree.thiago.bakingapp_stage1.adapter;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -9,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +49,12 @@ public class RecipeListAdapter extends
         RecipeJson recipe = mRecipesList.get(position);
         String recipeImage = recipe.getImage();
         if (null != recipe && null != recipeImage && !recipeImage.isEmpty()) {
-            // TODO: Use Picasso to load recipe Image
+            Uri uri = Uri.parse(recipeImage);
+
+            Picasso.with(mContext)
+                    .load(uri)
+                    .placeholder(R.drawable.food)
+                    .into(holder.recipeImage);
         }
 
         holder.recipeCard.setTag(position);

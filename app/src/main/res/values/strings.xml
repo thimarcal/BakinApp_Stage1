@@ -12,4 +12,13 @@
     <string name="default_recipe_name">Recipe Name</string>
     <string name="default_recipe_servings">2</string>
     <string name="title_activity_recipe_steps">RecipeStepsActivity</string>
+
+    <string name="previous_step">Previous Step</string>
+    <string name="next_step">Next Step</string>
+
+    <!-- DEFAULT DATA FOR BUNDLES -->
+    <string name="extra_position" translatable="false">extra_position</string>
+    <string name="current_recipe_key" translatable="false">current_recipe</string>
+    <string name="current_step_key" translatable="false">current_key</string>
+    <string name="recipes_key" translatable="false">recipes</string>
 </resources>

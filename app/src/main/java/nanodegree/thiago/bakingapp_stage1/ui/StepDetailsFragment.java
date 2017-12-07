@@ -1,16 +1,43 @@
 package nanodegree.thiago.bakingapp_stage1.ui;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.media.session.MediaButtonReceiver;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.widget.CardView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
+import com.google.android.exoplayer2.upstream.BandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 
 import nanodegree.thiago.bakingapp_stage1.OnFragmentInteractionListener;
 import nanodegree.thiago.bakingapp_stage1.R;
@@ -21,26 +48,35 @@ import nanodegree.thiago.bakingapp_stage1.R;
  * {@link OnFragmentInteractionListener} interface
  * to handle interaction events.
  */
-public class StepDetailsFragment extends Fragment {
+public class StepDetailsFragment extends Fragment implements View.OnClickListener {
+    private static final String TAG = StepDetailsFragment.class.getSimpleName();
 
     private OnFragmentInteractionListener mListener;
 
     private String mVideoUrl;
     private String mDescription;
     private int mStepPosition;
+    private int mTotalSteps;
+    private Context mContext;
 
-    private SimpleExoPlayer mSimpleExoPlayer;
     private CardView mVideoCardview;
     private TextView mDescriptionTv;
+    private Button mNextButton;
+    private Button mPreviousButton;
+
+    private SimpleExoPlayer mExoPlayer;
+    private SimpleExoPlayerView mPlayerView;
+
+    private boolean dataSet = false;
 
     public StepDetailsFragment() {
         // Required empty public constructor
+        dataSet = false;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -49,21 +85,52 @@ public class StepDetailsFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_step_details, container, false);
 
-        //mSimpleExoPlayer = (SimpleExoPlayer)view.findViewById(R.id.video_exoplayer);
-        mVideoCardview = (CardView)view.findViewById(R.id.video_cardview);
-        mDescriptionTv = (TextView)view.findViewById(R.id.description_textview);
+        mPlayerView = (SimpleExoPlayerView) view.findViewById(R.id.video_exoplayer);
+        mVideoCardview = (CardView) view.findViewById(R.id.video_cardview);
+        if (dataSet && (null == mVideoUrl || mVideoUrl.isEmpty())) {
+            mVideoCardview.setVisibility(View.GONE);
+        } else if (null != mVideoUrl && !mVideoUrl.isEmpty()){
+            createPlayer();
+        }
+        mDescriptionTv = (TextView) view.findViewById(R.id.description_textview);
+        if (null != mDescription) {
+            mDescriptionTv.setText(mDescription);
+        }
+
+        mNextButton = (Button)view.findViewById(R.id.next_button);
+        mPreviousButton = (Button)view.findViewById(R.id.previous_button);
+        mNextButton.setOnClickListener(this);
+        mPreviousButton.setOnClickListener(this);
+
+        if (mStepPosition == 0) {
+            mPreviousButton.setVisibility(View.INVISIBLE);
+        }
+
+        Log.d("DETAILS", "Size: "+mTotalSteps + "pos: "+mStepPosition);
+        if (dataSet && mStepPosition == mTotalSteps-1) {
+            mNextButton.setVisibility(View.INVISIBLE);
+        }
+
         return view;
     }
 
-    public void setStepData(String videoUrl, String description, int position) {
+    public void setStepData(Context context, String videoUrl, String description, int position, int totalSteps) {
+        mContext = context;
         mVideoUrl = videoUrl;
         mDescription = description;
         mStepPosition = position;
+        mTotalSteps = totalSteps;
 
         if ((null == videoUrl || videoUrl.isEmpty()) && (null != mVideoCardview)) {
-            mVideoCardview.setVisibility(View.INVISIBLE);
+            mVideoCardview.setVisibility(View.GONE);
+        } else if (null != videoUrl && !videoUrl.isEmpty()){
+            createPlayer();
         }
-        mDescriptionTv.setText(mDescription);
+
+        if (null != mDescriptionTv) {
+            mDescriptionTv.setText(mDescription);
+        }
+        dataSet = true;
     }
 
 
@@ -84,4 +151,38 @@ public class StepDetailsFragment extends Fragment {
         mListener = null;
     }
 
+    private void createPlayer() {
+        BandwidthMeter meter = new DefaultBandwidthMeter();
+        TrackSelection.Factory trackSelectionFactory =
+                new AdaptiveVideoTrackSelection.Factory(meter);
+
+        TrackSelector trackSelector = new DefaultTrackSelector(trackSelectionFactory);
+        LoadControl loadControl = new DefaultLoadControl();
+
+        mExoPlayer = ExoPlayerFactory.newSimpleInstance(mContext, trackSelector, loadControl);
+
+        Uri uri = Uri.parse(mVideoUrl);
+        // Prepare the MediaSource.
+        String userAgent = Util.getUserAgent(mContext, TAG);
+        MediaSource mediaSource = new ExtractorMediaSource(uri, new DefaultDataSourceFactory(
+                mContext, userAgent), new DefaultExtractorsFactory(), null, null);
+
+        mExoPlayer.prepare(mediaSource);
+        if (null != mPlayerView) {
+            mPlayerView.setPlayer(mExoPlayer);
+        }
+    }
+
+
+    @Override
+    public void onClick(View view) {
+        int action = OnFragmentInteractionListener.ACTION_INVALID;
+        if (view.getId() == R.id.next_button) {
+            action = OnFragmentInteractionListener.ACTION_NEXT_STEP;
+        } else if (view.getId() == R.id.previous_button) {
+            action = OnFragmentInteractionListener.ACTION_PREVIOUS_STEP;
+        }
+
+        mListener.onFragmentInteraction(action, null);
+    }
 }
