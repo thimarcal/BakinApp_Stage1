@@ -3,8 +3,10 @@ package nanodegree.thiago.bakingapp_stage1.ui;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -84,6 +86,7 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_step_details, container, false);
+        mContext = getContext();
 
         mPlayerView = (SimpleExoPlayerView) view.findViewById(R.id.video_exoplayer);
         mVideoCardview = (CardView) view.findViewById(R.id.video_cardview);
@@ -93,25 +96,45 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
             createPlayer();
         }
         mDescriptionTv = (TextView) view.findViewById(R.id.description_textview);
-        if (null != mDescription) {
+        if (null != mDescriptionTv) {
             mDescriptionTv.setText(mDescription);
         }
 
         mNextButton = (Button)view.findViewById(R.id.next_button);
-        mPreviousButton = (Button)view.findViewById(R.id.previous_button);
-        mNextButton.setOnClickListener(this);
-        mPreviousButton.setOnClickListener(this);
-
-        if (mStepPosition == 0) {
-            mPreviousButton.setVisibility(View.INVISIBLE);
+        if (null != mNextButton) {
+            mNextButton.setOnClickListener(this);
         }
-
-        Log.d("DETAILS", "Size: "+mTotalSteps + "pos: "+mStepPosition);
-        if (dataSet && mStepPosition == mTotalSteps-1) {
-            mNextButton.setVisibility(View.INVISIBLE);
+        mPreviousButton = (Button)view.findViewById(R.id.previous_button);
+        if (null != mPreviousButton) {
+            mPreviousButton.setOnClickListener(this);
         }
 
         return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+
+        super.onActivityCreated(savedInstanceState);
+        if (null != savedInstanceState) {
+            mVideoUrl = savedInstanceState.getString(getString(R.string.video_url_key));
+            mDescription = savedInstanceState.getString(getString(R.string.description_key));
+            mStepPosition = savedInstanceState.getInt(getString(R.string.current_step_key));
+            mTotalSteps = savedInstanceState.getInt(getString(R.string.total_steps_key));
+
+            if (null != mDescriptionTv) {
+                mDescriptionTv.setText(mDescription);
+            }
+            createPlayer();
+        }
+
+        if (mStepPosition == 0 && null != mPreviousButton) {
+            mPreviousButton.setVisibility(View.INVISIBLE);
+        }
+
+        if (dataSet && mStepPosition == mTotalSteps-1 && null != mNextButton) {
+            mNextButton.setVisibility(View.INVISIBLE);
+        }
     }
 
     public void setStepData(Context context, String videoUrl, String description, int position, int totalSteps) {
@@ -176,6 +199,8 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
 
     @Override
     public void onClick(View view) {
+        Bundle bundle = new Bundle();
+        bundle.putInt(getString(R.string.extra_position), mStepPosition);
         int action = OnFragmentInteractionListener.ACTION_INVALID;
         if (view.getId() == R.id.next_button) {
             action = OnFragmentInteractionListener.ACTION_NEXT_STEP;
@@ -183,6 +208,17 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
             action = OnFragmentInteractionListener.ACTION_PREVIOUS_STEP;
         }
 
-        mListener.onFragmentInteraction(action, null);
+        mListener.onFragmentInteraction(action, bundle);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        Log.d("Details", "Saving");
+        outState.putString(getString(R.string.video_url_key), mVideoUrl);
+        outState.putString(getString(R.string.description_key), mDescription);
+        outState.putInt(getString(R.string.current_step_key), mStepPosition);
+        outState.putInt(getString(R.string.total_steps_key), mTotalSteps);
+
+        super.onSaveInstanceState(outState);
     }
 }

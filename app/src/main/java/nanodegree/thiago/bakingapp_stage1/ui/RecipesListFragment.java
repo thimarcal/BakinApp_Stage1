@@ -4,7 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -40,12 +43,26 @@ public class RecipesListFragment extends Fragment
     private OnFragmentInteractionListener mListener;
 
     private RecyclerView recipesListRecyclerView;
-    private LinearLayoutManager layoutManager;
+    private RecyclerView.LayoutManager layoutManager;
     private RecipeListAdapter recipeListAdapter;
 
+    private List<RecipeJson> mRecipes;
+
+    private boolean mLargeScreen;
 
     public RecipesListFragment() {
         // Required empty public constructor
+    }
+
+    public void setLargeScreen(boolean largeScreen) {
+        mLargeScreen = largeScreen;
+        if (mLargeScreen && null != recipesListRecyclerView) {
+            layoutManager = new GridLayoutManager(getActivity(),
+                    3,
+                    GridLayoutManager.VERTICAL,
+                    false);
+            recipesListRecyclerView.setLayoutManager(layoutManager);
+        }
     }
 
     @Override
@@ -60,9 +77,16 @@ public class RecipesListFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_recipes_list, container, false);
         recipesListRecyclerView = (RecyclerView)view.findViewById(R.id.recipe_list_recyclerview);
 
-        layoutManager = new LinearLayoutManager(getActivity(),
-                LinearLayoutManager.VERTICAL,
-                false);
+        if (!mLargeScreen) {
+            layoutManager = new LinearLayoutManager(getActivity(),
+                    LinearLayoutManager.VERTICAL,
+                    false);
+        } else {
+            layoutManager = new GridLayoutManager(getActivity(),
+                    3,
+                    GridLayoutManager.VERTICAL,
+                    false);
+        }
         recipesListRecyclerView.setLayoutManager(layoutManager);
 
         recipeListAdapter = new RecipeListAdapter(getContext(), this);
@@ -72,14 +96,27 @@ public class RecipesListFragment extends Fragment
     }
 
     public void setRecipes(ArrayList<RecipeJson> recipes) {
+        mRecipes = recipes;
         if (null != recipeListAdapter) {
-            recipeListAdapter.setRecipesList(recipes);
+            recipeListAdapter.setRecipesList(mRecipes);
         }
     }
 
     @Override
     public void onStart() {
         super.onStart();
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (null != savedInstanceState) {
+            mRecipes = savedInstanceState.getParcelableArrayList(getString(R.string.recipes_key));
+
+            if(null != recipeListAdapter) {
+                recipeListAdapter.setRecipesList(mRecipes);
+            }
+        }
     }
 
     @Override
@@ -110,5 +147,12 @@ public class RecipesListFragment extends Fragment
 
         mListener.onFragmentInteraction(OnFragmentInteractionListener.ACTION_RECIPE_SELECTED,
                                         bundle);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList(getString(R.string.recipes_key),
+                new ArrayList<Parcelable>(mRecipes));
+        super.onSaveInstanceState(outState);
     }
 }

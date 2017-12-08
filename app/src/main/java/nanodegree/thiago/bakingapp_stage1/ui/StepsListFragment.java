@@ -3,6 +3,8 @@ package nanodegree.thiago.bakingapp_stage1.ui;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import nanodegree.thiago.bakingapp_stage1.OnFragmentInteractionListener;
@@ -78,6 +81,19 @@ public class StepsListFragment extends Fragment implements View.OnClickListener,
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        if (null != savedInstanceState) {
+            mStepsList = savedInstanceState.getParcelableArrayList(getString(R.string.steps_key));
+
+            if(null != mAdapter) {
+                mAdapter.setSteps(mStepsList);
+            }
+        }
+    }
+
+    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
@@ -94,9 +110,16 @@ public class StepsListFragment extends Fragment implements View.OnClickListener,
         mListener = null;
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList(getString(R.string.steps_key),
+                new ArrayList<Parcelable>(mStepsList));
+        super.onSaveInstanceState(outState);
+    }
+
     /*
-     * OnClick will handle clicks to the Ingredients Card
-     */
+         * OnClick will handle clicks to the Ingredients Card
+         */
     @Override
     public void onClick(View view) {
         mListener.onFragmentInteraction(OnFragmentInteractionListener.ACTION_INGREDIENTS_SELECTED, null);
