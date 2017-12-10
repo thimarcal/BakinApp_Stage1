@@ -172,6 +172,17 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        if (null != mExoPlayer) {
+            mExoPlayer.release();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (null != mExoPlayer) {
+            mExoPlayer.release();
+        }
     }
 
     private void createPlayer() {

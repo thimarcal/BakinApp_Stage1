@@ -151,8 +151,10 @@ public class RecipesListFragment extends Fragment
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelableArrayList(getString(R.string.recipes_key),
-                new ArrayList<Parcelable>(mRecipes));
+        if (null != mRecipes) {
+            outState.putParcelableArrayList(getString(R.string.recipes_key),
+                    new ArrayList<Parcelable>(mRecipes));
+        }
         super.onSaveInstanceState(outState);
     }
 }

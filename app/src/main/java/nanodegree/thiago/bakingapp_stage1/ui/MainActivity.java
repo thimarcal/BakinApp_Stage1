@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 import nanodegree.thiago.bakingapp_stage1.OnFragmentInteractionListener;
 import nanodegree.thiago.bakingapp_stage1.R;
+import nanodegree.thiago.bakingapp_stage1.RecipesWidget;
 import nanodegree.thiago.bakingapp_stage1.data.RecipeJson;
 
 public class MainActivity extends AppCompatActivity
@@ -168,6 +169,7 @@ public class MainActivity extends AppCompatActivity
             if (mLargeScreen) {
                 largeContainer.setVisibility(View.GONE);
             }
+            ((RecipesListFragment)mCurrentFragment).setRecipes(mRecipesList);
             ((RecipesListFragment) (mCurrentFragment)).setLargeScreen(mLargeScreen);
         }
 
@@ -205,6 +207,11 @@ public class MainActivity extends AppCompatActivity
                             .addToBackStack(null)
                             .commit();
                 }
+
+                // When recipe is selected, update Widgets
+                RecipesWidget.updateWidgets(this,
+                        mRecipesList.get(mCurrentRecipe).getName(),
+                        mRecipesList.get(mCurrentRecipe).getIngredients());
                 break;
 
             case ACTION_STEP_SELECTED:
