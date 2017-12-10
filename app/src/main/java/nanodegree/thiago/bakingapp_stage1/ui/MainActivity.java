@@ -4,7 +4,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -17,21 +16,25 @@ import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import nanodegree.thiago.bakingapp_stage1.OnFragmentInteractionListener;
 import nanodegree.thiago.bakingapp_stage1.R;
 import nanodegree.thiago.bakingapp_stage1.RecipesWidget;
 import nanodegree.thiago.bakingapp_stage1.data.RecipeJson;
 
+/**
+ * Main Activity handles Fragments and Clicks, to change between fragments. It's also responsible
+ * for identifying different screen sizes and rotation.
+ */
+
 public class MainActivity extends AppCompatActivity
         implements OnFragmentInteractionListener {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
-
+    // URL to get recipes for the example
     private static final String RECIPES_URL =
             "https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json";
 
-    private RequestQueue queue;
     private ArrayList<RecipeJson> mRecipesList;
     private FrameLayout largeContainer;
 
@@ -48,9 +51,12 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         // Detect it's not sw600dp screen
-        largeContainer = (FrameLayout) findViewById(R.id.big_fragment_container);
+        largeContainer = findViewById(R.id.big_fragment_container);
         mLargeScreen = (largeContainer != null);
 
+        /*
+         * Detects screen changes, like screen rotation, and does not need to reload data
+         */
         if (savedInstanceState == null) {
             mCurrentFragment = new RecipesListFragment();
             ((RecipesListFragment) mCurrentFragment).setLargeScreen(mLargeScreen);
@@ -62,10 +68,10 @@ public class MainActivity extends AppCompatActivity
                 ((RecipesListFragment) (mCurrentFragment)).setRecipes(mRecipesList);
             }
 
-            /**
-             * Data is retrieved in MainActivity, that will handle Fragment changes
+            /*
+             * Data is retrieved in MainActivity using Volley Lib, that will handle Fragment changes
              */
-            queue = Volley.newRequestQueue(this);
+            RequestQueue queue = Volley.newRequestQueue(this);
 
             StringRequest request = new StringRequest(
                     Request.Method.GET,
@@ -76,9 +82,7 @@ public class MainActivity extends AppCompatActivity
                             Gson gson = new Gson();
                             RecipeJson[] recipes = gson.fromJson(response, RecipeJson[].class);
                             mRecipesList = new ArrayList();
-                            for (RecipeJson recipe : recipes) {
-                                mRecipesList.add(recipe);
-                            }
+                            mRecipesList.addAll(Arrays.asList(recipes));
 
                             if (null != mCurrentFragment && mCurrentFragment instanceof RecipesListFragment) {
                                 ((RecipesListFragment) (mCurrentFragment)).setRecipes(mRecipesList);
@@ -95,7 +99,9 @@ public class MainActivity extends AppCompatActivity
             queue.add(request);
 
         } else {
-
+            /*
+             * Data is already available
+             */
             mCurrentFragment = getSupportFragmentManager().getFragment(savedInstanceState,
                     getString(R.string.fragment_key));
             mCurrentRecipeStep = savedInstanceState.getInt(getString(R.string.current_step_key));
@@ -125,7 +131,7 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-
+        // Adds mCurrent Fragment, that may be initial screen, or other screen, if rotated
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragments_container, mCurrentFragment)
                 .commit();
@@ -133,6 +139,9 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    /*
+     * Saves current state, that means current Fragment and useful data
+     */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putInt(getString(R.string.current_recipe_key), mCurrentRecipe);
@@ -152,6 +161,9 @@ public class MainActivity extends AppCompatActivity
         super.onSaveInstanceState(outState);
     }
 
+    /*
+     * Handles back press, that will pop previous fragment and set data if needed
+     */
     @Override
     public void onBackPressed() {
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
@@ -175,12 +187,16 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    /*
+     * This listener method identifies which action was taken, and appropriately changes fragment
+     */
     @Override
     public void onFragmentInteraction(int action, Bundle extras) {
         if (mLargeScreen) {
             largeContainer.setVisibility(View.VISIBLE);
         }
         switch (action) {
+            // Recipe was clicked, must Open Steps
             case OnFragmentInteractionListener.ACTION_RECIPE_SELECTED:
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 mCurrentFragment = new StepsListFragment();
@@ -214,6 +230,7 @@ public class MainActivity extends AppCompatActivity
                         mRecipesList.get(mCurrentRecipe).getIngredients());
                 break;
 
+            // When a step is selected, it must be shown
             case ACTION_STEP_SELECTED:
                 mCurrentRecipeStep = extras.getInt(getString(R.string.extra_position));
                 RecipeJson.StepsBean step = mRecipesList.get(mCurrentRecipe)
@@ -243,6 +260,7 @@ public class MainActivity extends AppCompatActivity
                 }
                 break;
 
+            // Ingredients are shown, when selected
             case ACTION_INGREDIENTS_SELECTED:
                 if (!mLargeScreen) {
                     mCurrentFragment = new IngredientsFragment();
@@ -265,6 +283,7 @@ public class MainActivity extends AppCompatActivity
                 }
                 break;
 
+            // Handles navigation between steps
             case ACTION_NEXT_STEP:
                 mCurrentRecipeStep = extras.getInt(getString(R.string.extra_position));
                 mCurrentRecipeStep += 1;

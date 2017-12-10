@@ -1,8 +1,6 @@
 package nanodegree.thiago.bakingapp_stage1.ui;
 
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -10,21 +8,9 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewDebug;
 import android.view.ViewGroup;
-import android.widget.TextView;
-
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonRequest;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +23,6 @@ import nanodegree.thiago.bakingapp_stage1.data.RecipeJson;
 
 public class RecipesListFragment extends Fragment
                                  implements RecipeListAdapter.RecipeOnClickListener {
-
-    private static final String TAG = RecipesListFragment.class.getSimpleName();
 
     private OnFragmentInteractionListener mListener;
 
@@ -75,7 +59,7 @@ public class RecipesListFragment extends Fragment
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_recipes_list, container, false);
-        recipesListRecyclerView = (RecyclerView)view.findViewById(R.id.recipe_list_recyclerview);
+        recipesListRecyclerView = view.findViewById(R.id.recipe_list_recyclerview);
 
         if (!mLargeScreen) {
             layoutManager = new LinearLayoutManager(getActivity(),

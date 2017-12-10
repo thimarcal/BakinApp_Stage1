@@ -1,12 +1,9 @@
 package nanodegree.thiago.bakingapp_stage1.ui;
 
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,9 +22,6 @@ import nanodegree.thiago.bakingapp_stage1.data.RecipeJson;
  * to handle interaction events.
  */
 public class IngredientsFragment extends Fragment {
-    private OnFragmentInteractionListener mListener;
-    private RecyclerView recyclerView;
-    private LinearLayoutManager layoutManager;
     private IngredientsAdapter adapter;
 
     private List<RecipeJson.IngredientsBean> mIngredients;
@@ -48,8 +42,8 @@ public class IngredientsFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_ingredients, container, false);
 
-        recyclerView = (RecyclerView)view.findViewById(R.id.ingredients_recyclerview);
-        layoutManager = new LinearLayoutManager(getContext(),
+        RecyclerView recyclerView = view.findViewById(R.id.ingredients_recyclerview);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(),
                 LinearLayoutManager.VERTICAL,
                 false);
 
@@ -67,26 +61,8 @@ public class IngredientsFragment extends Fragment {
     public void setIngredients (List<RecipeJson.IngredientsBean> list) {
         mIngredients = list;
         if (null != adapter) {
-            Log.d("List", ""+list.size());
             adapter.setIngredients(mIngredients);
         }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
     }
 
  }

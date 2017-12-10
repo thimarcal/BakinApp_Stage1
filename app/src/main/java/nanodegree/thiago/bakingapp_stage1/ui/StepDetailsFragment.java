@@ -1,18 +1,11 @@
 package nanodegree.thiago.bakingapp_stage1.ui;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.media.session.MediaButtonReceiver;
-import android.support.v4.media.session.MediaSessionCompat;
-import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.widget.CardView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,20 +13,15 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
@@ -88,23 +76,23 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
         View view = inflater.inflate(R.layout.fragment_step_details, container, false);
         mContext = getContext();
 
-        mPlayerView = (SimpleExoPlayerView) view.findViewById(R.id.video_exoplayer);
-        mVideoCardview = (CardView) view.findViewById(R.id.video_cardview);
+        mPlayerView = view.findViewById(R.id.video_exoplayer);
+        mVideoCardview = view.findViewById(R.id.video_cardview);
         if (dataSet && (null == mVideoUrl || mVideoUrl.isEmpty())) {
             mVideoCardview.setVisibility(View.GONE);
         } else if (null != mVideoUrl && !mVideoUrl.isEmpty()){
             createPlayer();
         }
-        mDescriptionTv = (TextView) view.findViewById(R.id.description_textview);
+        mDescriptionTv = view.findViewById(R.id.description_textview);
         if (null != mDescriptionTv) {
             mDescriptionTv.setText(mDescription);
         }
 
-        mNextButton = (Button)view.findViewById(R.id.next_button);
+        mNextButton = view.findViewById(R.id.next_button);
         if (null != mNextButton) {
             mNextButton.setOnClickListener(this);
         }
-        mPreviousButton = (Button)view.findViewById(R.id.previous_button);
+        mPreviousButton = view.findViewById(R.id.previous_button);
         if (null != mPreviousButton) {
             mPreviousButton.setOnClickListener(this);
         }
@@ -224,7 +212,6 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        Log.d("Details", "Saving");
         outState.putString(getString(R.string.video_url_key), mVideoUrl);
         outState.putString(getString(R.string.description_key), mDescription);
         outState.putInt(getString(R.string.current_step_key), mStepPosition);

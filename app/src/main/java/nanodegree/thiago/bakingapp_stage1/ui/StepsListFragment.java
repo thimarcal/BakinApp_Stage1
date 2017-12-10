@@ -1,7 +1,6 @@
 package nanodegree.thiago.bakingapp_stage1.ui;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -9,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,11 +31,8 @@ public class StepsListFragment extends Fragment implements View.OnClickListener,
 
     private OnFragmentInteractionListener mListener;
 
-    private RecyclerView stepsRecyclerView;
     private RecipeStepAdapter mAdapter;
-    private LinearLayoutManager layoutManager;
     private List<RecipeJson.StepsBean> mStepsList;
-    private CardView mIngredientsCard;
 
     public StepsListFragment() {
         // Required empty public constructor
@@ -61,12 +56,13 @@ public class StepsListFragment extends Fragment implements View.OnClickListener,
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_steps_list, container, false);
-        stepsRecyclerView = (RecyclerView) view.findViewById(R.id.steps_list_recyclerview);
+        RecyclerView stepsRecyclerView;
+        stepsRecyclerView = view.findViewById(R.id.steps_list_recyclerview);
 
-        mIngredientsCard = view.findViewById(R.id.ingredients_card);
+        CardView mIngredientsCard = view.findViewById(R.id.ingredients_card);
         mIngredientsCard.setOnClickListener(this);
 
-        layoutManager = new LinearLayoutManager(getActivity(),
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity(),
                 LinearLayoutManager.VERTICAL,
                 false);
         stepsRecyclerView.setLayoutManager(layoutManager);
