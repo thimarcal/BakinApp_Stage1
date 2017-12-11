@@ -54,6 +54,9 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
     private Button mNextButton;
     private Button mPreviousButton;
 
+    private long mCurrentPosition;
+    private boolean isPlaying;
+
     private SimpleExoPlayer mExoPlayer;
     private SimpleExoPlayerView mPlayerView;
 
@@ -109,6 +112,8 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
             mDescription = savedInstanceState.getString(getString(R.string.description_key));
             mStepPosition = savedInstanceState.getInt(getString(R.string.current_step_key));
             mTotalSteps = savedInstanceState.getInt(getString(R.string.total_steps_key));
+            mCurrentPosition = savedInstanceState.getLong(getString(R.string.current_position_key));
+            isPlaying = savedInstanceState.getBoolean(getString(R.string.play_ready));
 
             if (null != mDescriptionTv) {
                 mDescriptionTv.setText(mDescription);
@@ -157,6 +162,19 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        mExoPlayer.release();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        mExoPlayer.release();
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
@@ -190,6 +208,8 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
                 mContext, userAgent), new DefaultExtractorsFactory(), null, null);
 
         mExoPlayer.prepare(mediaSource);
+        mExoPlayer.seekTo(mCurrentPosition);
+        mExoPlayer.setPlayWhenReady(isPlaying);
         if (null != mPlayerView) {
             mPlayerView.setPlayer(mExoPlayer);
         }
@@ -216,6 +236,10 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
         outState.putString(getString(R.string.description_key), mDescription);
         outState.putInt(getString(R.string.current_step_key), mStepPosition);
         outState.putInt(getString(R.string.total_steps_key), mTotalSteps);
+
+        outState.putLong(getString(R.string.current_position_key),
+                    mExoPlayer.getCurrentPosition());
+        outState.putBoolean(getString(R.string.play_ready), mExoPlayer.getPlayWhenReady());
 
         super.onSaveInstanceState(outState);
     }

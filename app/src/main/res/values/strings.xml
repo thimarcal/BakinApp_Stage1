@@ -22,10 +22,13 @@
     <string name="current_step_key" translatable="false">current_key</string>
     <string name="recipes_key" translatable="false">recipes</string>
     <string name="fragment_key" translatable="false">fragment</string>
+    <string name="ingredients_key" translatable="false">ingredients</string>
     <string name="large_fragment_key" translatable="false">large_fragment</string>
     <string name="large_screen_key" translatable="false">large_screen</string>
     <string name="steps_key" translatable="false">steps</string>
     <string name="total_steps_key" translatable="false">total_steps</string>
+    <string name="current_position_key" translatable="false">current_position</string>
+    <string name="play_ready" translatable="false">play_when_ready</string>
     <string name="video_url_key" translatable="false">video_url</string>
     <string name="description_key" translatable="false">description</string>
     <string name="add_widget">Add widget</string>
