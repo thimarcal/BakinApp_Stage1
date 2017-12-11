@@ -4,6 +4,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -162,8 +163,23 @@ public class MainActivity extends AppCompatActivity
     }
 
     /*
-     * Handles back press, that will pop previous fragment and set data if needed
+     * This method handles click on Back in Action Bar. It just calls onBackPressed that has the
+     * needed logic.
      */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /*
+         * Handles back press, that will pop previous fragment and set data if needed
+         */
     @Override
     public void onBackPressed() {
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
@@ -183,12 +199,16 @@ public class MainActivity extends AppCompatActivity
             }
             ((RecipesListFragment)mCurrentFragment).setRecipes(mRecipesList);
             ((RecipesListFragment) (mCurrentFragment)).setLargeScreen(mLargeScreen);
+
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            getSupportActionBar().setTitle(getString(R.string.app_name));
         }
 
     }
 
     /*
-     * This listener method identifies which action was taken, and appropriately changes fragment
+     * This listener method identifies which action was taken, and appropriately changes fragment.
+     * For each fragment, it enables Back Button in Action Bar.
      */
     @Override
     public void onFragmentInteraction(int action, Bundle extras) {
@@ -198,10 +218,13 @@ public class MainActivity extends AppCompatActivity
         switch (action) {
             // Recipe was clicked, must Open Steps
             case OnFragmentInteractionListener.ACTION_RECIPE_SELECTED:
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 mCurrentFragment = new StepsListFragment();
                 mCurrentRecipe = extras.getInt(getString(R.string.extra_position));
                 ((StepsListFragment) (mCurrentFragment)).setStepsList(mRecipesList.get(mCurrentRecipe).getSteps());
+                getSupportActionBar().setTitle(mRecipesList.get(mCurrentRecipe).getName());
 
                 if (!mLargeScreen) {
                     transaction.replace(R.id.fragments_container, mCurrentFragment);
@@ -232,6 +255,8 @@ public class MainActivity extends AppCompatActivity
 
             // When a step is selected, it must be shown
             case ACTION_STEP_SELECTED:
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
                 mCurrentRecipeStep = extras.getInt(getString(R.string.extra_position));
                 RecipeJson.StepsBean step = mRecipesList.get(mCurrentRecipe)
                         .getSteps().get(mCurrentRecipeStep);
@@ -262,6 +287,8 @@ public class MainActivity extends AppCompatActivity
 
             // Ingredients are shown, when selected
             case ACTION_INGREDIENTS_SELECTED:
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
                 if (!mLargeScreen) {
                     mCurrentFragment = new IngredientsFragment();
                     ((IngredientsFragment) (mCurrentFragment)).setIngredients(
@@ -285,6 +312,8 @@ public class MainActivity extends AppCompatActivity
 
             // Handles navigation between steps
             case ACTION_NEXT_STEP:
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
                 mCurrentRecipeStep = extras.getInt(getString(R.string.extra_position));
                 mCurrentRecipeStep += 1;
                 RecipeJson.StepsBean nextStep = mRecipesList.get(mCurrentRecipe).getSteps().get(mCurrentRecipeStep);
@@ -318,6 +347,8 @@ public class MainActivity extends AppCompatActivity
                 break;
 
             case ACTION_PREVIOUS_STEP:
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
                 mCurrentRecipeStep = extras.getInt(getString(R.string.extra_position));
                 mCurrentRecipeStep -= 1;
                 RecipeJson.StepsBean prevStep = mRecipesList.get(mCurrentRecipe).getSteps().get(mCurrentRecipeStep);
