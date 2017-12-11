@@ -6,10 +6,13 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -53,6 +56,7 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
     private TextView mDescriptionTv;
     private Button mNextButton;
     private Button mPreviousButton;
+    private LinearLayout mDetailsLand;
 
     private long mCurrentPosition;
     private boolean isPlaying;
@@ -100,6 +104,9 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
             mPreviousButton.setOnClickListener(this);
         }
 
+        mDetailsLand = view.findViewById(R.id.land_details_view);
+        Log.d("TESTE", ""+mDetailsLand);
+
         return view;
     }
 
@@ -115,10 +122,22 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
             mCurrentPosition = savedInstanceState.getLong(getString(R.string.current_position_key));
             isPlaying = savedInstanceState.getBoolean(getString(R.string.play_ready));
 
+            Log.d("Teste", ""+ mTotalSteps+" - "+mStepPosition);
+
             if (null != mDescriptionTv) {
                 mDescriptionTv.setText(mDescription);
             }
-            createPlayer();
+            if (!TextUtils.isEmpty(mVideoUrl)) {
+                createPlayer();
+            } else {
+                if (null != mVideoCardview) {
+                    mVideoCardview.setVisibility(View.GONE);
+                }
+                mPlayerView.setVisibility(View.GONE);
+                if (null != mDetailsLand) {
+                    mDetailsLand.setVisibility(View.VISIBLE);
+                }
+            }
         }
 
         if (mStepPosition == 0 && null != mPreviousButton) {
@@ -164,14 +183,18 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
     @Override
     public void onPause() {
         super.onPause();
-        mExoPlayer.release();
+        if (null != mExoPlayer) {
+            mExoPlayer.release();
+        }
     }
 
     @Override
     public void onStop() {
         super.onStop();
 
-        mExoPlayer.release();
+        if (null != mExoPlayer) {
+            mExoPlayer.release();
+        }
     }
 
     @Override
@@ -237,9 +260,11 @@ public class StepDetailsFragment extends Fragment implements View.OnClickListene
         outState.putInt(getString(R.string.current_step_key), mStepPosition);
         outState.putInt(getString(R.string.total_steps_key), mTotalSteps);
 
-        outState.putLong(getString(R.string.current_position_key),
+        if (null != mExoPlayer) {
+            outState.putLong(getString(R.string.current_position_key),
                     mExoPlayer.getCurrentPosition());
-        outState.putBoolean(getString(R.string.play_ready), mExoPlayer.getPlayWhenReady());
+            outState.putBoolean(getString(R.string.play_ready), mExoPlayer.getPlayWhenReady());
+        }
 
         super.onSaveInstanceState(outState);
     }

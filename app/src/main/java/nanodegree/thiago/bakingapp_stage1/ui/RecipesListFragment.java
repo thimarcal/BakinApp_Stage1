@@ -97,7 +97,7 @@ public class RecipesListFragment extends Fragment
         if (null != savedInstanceState) {
             mRecipes = savedInstanceState.getParcelableArrayList(getString(R.string.recipes_key));
 
-            if(null != recipeListAdapter) {
+            if(null != recipeListAdapter && null != mRecipes) {
                 recipeListAdapter.setRecipesList(mRecipes);
             }
         }

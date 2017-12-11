@@ -1,5 +1,7 @@
 package nanodegree.thiago.bakingapp_stage1.ui;
 
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -7,6 +9,7 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -18,6 +21,7 @@ import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import nanodegree.thiago.bakingapp_stage1.OnFragmentInteractionListener;
 import nanodegree.thiago.bakingapp_stage1.R;
@@ -50,6 +54,16 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ConnectivityManager connManager = (ConnectivityManager)
+                getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connManager.getActiveNetworkInfo();
+        boolean isConnected = (networkInfo != null) && (networkInfo.isConnected());
+        if (!isConnected) {
+            Toast.makeText(this, getString(R.string.no_connection_error), Toast.LENGTH_LONG)
+                    .show();
+            return;
+        }
 
         // Detect it's not sw600dp screen
         largeContainer = findViewById(R.id.big_fragment_container);
@@ -118,6 +132,12 @@ public class MainActivity extends AppCompatActivity
                 ((RecipesListFragment) mCurrentFragment).setLargeScreen(mLargeScreen);
             }
 
+            if (!(mCurrentFragment instanceof RecipesListFragment)) {
+                // Display navigation when rotating screen
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setTitle(mRecipesList.get(mCurrentRecipe).getName());
+            }
+
             if (mLargeScreen && null != mCurrentLargeFragment) {
 
                 getSupportFragmentManager().beginTransaction()
@@ -132,12 +152,13 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-        // Adds mCurrent Fragment, that may be initial screen, or other screen, if rotated
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragments_container, mCurrentFragment)
-                .commit();
+        if (null != mCurrentFragment) {
+            // Adds mCurrent Fragment, that may be initial screen, or other screen, if rotated
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragments_container, mCurrentFragment)
+                    .commit();
 
-
+        }
     }
 
     /*
@@ -145,20 +166,21 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putInt(getString(R.string.current_recipe_key), mCurrentRecipe);
-        outState.putInt(getString(R.string.current_step_key), mCurrentRecipeStep);
-        outState.putParcelableArrayList(getString(R.string.recipes_key), mRecipesList);
-        outState.putBoolean(getString(R.string.large_screen_key), mLargeScreen);
+        if (null != mCurrentFragment) {
+            outState.putInt(getString(R.string.current_recipe_key), mCurrentRecipe);
+            outState.putInt(getString(R.string.current_step_key), mCurrentRecipeStep);
+            outState.putParcelableArrayList(getString(R.string.recipes_key), mRecipesList);
+            outState.putBoolean(getString(R.string.large_screen_key), mLargeScreen);
 
-        getSupportFragmentManager().putFragment(outState,
-                getString(R.string.fragment_key),
-                mCurrentFragment);
-        if (null != mCurrentLargeFragment) {
             getSupportFragmentManager().putFragment(outState,
-                    getString(R.string.large_fragment_key),
-                    mCurrentLargeFragment);
+                    getString(R.string.fragment_key),
+                    mCurrentFragment);
+            if (null != mCurrentLargeFragment) {
+                getSupportFragmentManager().putFragment(outState,
+                        getString(R.string.large_fragment_key),
+                        mCurrentLargeFragment);
+            }
         }
-
         super.onSaveInstanceState(outState);
     }
 
@@ -188,7 +210,12 @@ public class MainActivity extends AppCompatActivity
             super.onBackPressed();
         }
 
-        mCurrentFragment = getSupportFragmentManager().getFragments().get(0);
+        List<Fragment> fragments = getSupportFragmentManager().getFragments();
+        if (null == fragments || fragments.isEmpty()) {
+            super.onBackPressed();
+            return;
+        }
+        mCurrentFragment = fragments.get(0);
 
         // When returning, I need to update my fragment with Data, so checking its type allows me
         // to call the appropriate method
@@ -197,7 +224,9 @@ public class MainActivity extends AppCompatActivity
             if (mLargeScreen) {
                 largeContainer.setVisibility(View.GONE);
             }
-            ((RecipesListFragment)mCurrentFragment).setRecipes(mRecipesList);
+            if (null != mRecipesList) {
+                ((RecipesListFragment) mCurrentFragment).setRecipes(mRecipesList);
+            }
             ((RecipesListFragment) (mCurrentFragment)).setLargeScreen(mLargeScreen);
 
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
