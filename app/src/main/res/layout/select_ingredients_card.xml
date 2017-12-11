@@ -5,6 +5,7 @@
     android:id="@+id/select_ingredients_card"
     android:layout_width="match_parent"
     android:layout_height="100dp"
+    android:layout_margin="@dimen/card_margin"
     app:cardCornerRadius="5dp">
 
     <android.support.constraint.ConstraintLayout
